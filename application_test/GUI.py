@@ -46,8 +46,12 @@ class App(customtkinter.CTk):
         
 
     def scale_size(img, height):
-        width = round(img.width * height / img.height)
-        return img.resize((width, height))
+        x_size = img.width, y_size = img.height
+        if x_size < y_size:
+            re_size = (width, round(img.height * x_size))
+        else:
+            re_size = (round(img.width * y_size), height)
+        return img.resize(re_size)
 
     def Get_images(self):
         url = "https://ashhaddevlab.gallerycdn.vsassets.io/extensions/ashhaddevlab/customtkinter-snippets/4.0.0/1707726079732/Microsoft.VisualStudio.Services.Icons.Default"
