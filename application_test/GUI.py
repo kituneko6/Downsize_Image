@@ -12,7 +12,7 @@ class App(customtkinter.CTk):
         super().__init__()
 
         self.fonts = (FONT_TYPE, 15)
-        self.geometry("400x320")
+        self.geometry("460x320")
         self.title("test")
 
         self.setup_form()
@@ -45,6 +45,10 @@ class App(customtkinter.CTk):
             self.textbox.insert(0, f"エラー：{str(e)}")
         
 
+    def scale_size(img, height):
+        width = round(img.width * height / img.height)
+        return img.resize((width, height))
+
     def Get_images(self):
         url = "https://ashhaddevlab.gallerycdn.vsassets.io/extensions/ashhaddevlab/customtkinter-snippets/4.0.0/1707726079732/Microsoft.VisualStudio.Services.Icons.Default"
         #url = self.textbox.get()
@@ -55,9 +59,8 @@ class App(customtkinter.CTk):
             img_data = BytesIO(respon.content)
             image = Image.open(img_data)
 
-            height = 980
-            width = 1980
-            image = image.resize((width,height), Image.ANTIALIAS)
+            out_image = self.scale_size(image, 1920)
+            image = self.scale_size(image, 280)
 
             tk_image = ImageTk.PhotoImage(image)
 
@@ -67,6 +70,8 @@ class App(customtkinter.CTk):
         except requests.exceptions.RequestException as e:
             print("画像の取得に失敗しました：", e)
     
+
+
 
 if __name__ == "__main__":
     app = App()
