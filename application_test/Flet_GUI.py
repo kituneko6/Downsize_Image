@@ -1,4 +1,4 @@
-# %%
+
 
 import requests
 import flet as ft
@@ -23,6 +23,7 @@ def main(page: ft.Page):
     
     def fetch_image(e):
         nonlocal image_display
+        global image_data
         try:
             response = requests.get(url.value, proxies=proxies_dic)
             response.raise_for_status()
