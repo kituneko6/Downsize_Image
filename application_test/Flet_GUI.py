@@ -4,6 +4,11 @@ from flet import Image
 from io import BytesIO
 import base64
 from PIL import Image
+import pyperclip
+from disco_bot import client, send_image
+import asyncio
+
+TOKEN = "MTMwOTQyNjc3NDAwOTk3NDg3NA.G4v112.06AVIquouZ-nznSejhxXE4_zGtF9N3VOugKKSI"
 
 
 '''
@@ -20,12 +25,18 @@ def main(page: ft.Page):
 
     image_display = ft.Image("favicon.png")
     status_text = ft.Text("画像URLを入力して、表示ボタンを押してください")
+    send_image_text = ft.Text("")
 
-    #def copy_clip():
-        
+    def copy_clip(e):
+        try:
+            clip = pyperclip.paste()
+            url.value = clip
+            page.update()
+        except Exception as ex:
+            status_text.value = f"Copy_ERROR：{ex}"
     
     ###イメージ取得、リサイズ、保存、表示切替###
-    def fetch_image(e):
+    async def fetch_image(e):
         nonlocal image_display
         global image_data
         try:
@@ -55,13 +66,15 @@ def main(page: ft.Page):
             image_display.src_base64 = image_base64
             status_text.value = f"画像が正常に読み込まれました！\nサムネイルサイズ{image_thumbnail.size}"
 
+            await handle_send_image()
 
-            
         except Exception as ex:
             status_text.value = f"エラーが発生しました：{ex}"
 
         page.update()
     
+
+
     ###比率をそのままリサイズ###
     def scale_size(image, hei):
         x_size = image.width
@@ -79,23 +92,43 @@ def main(page: ft.Page):
             status_text.value = f"リサイズERROR：{ex}"
             raise
         
-
+    copy_button = ft.ElevatedButton("Copy", on_click=copy_clip)
     fetch_button = ft.ElevatedButton("表示", on_click=fetch_image)
-
-
 
     page.add(
         ft.Column([
             url,
+            copy_button,
             fetch_button,
             status_text,
             image_display,
+            send_image_text,
         ],
         alignment=ft.MainAxisAlignment.CENTER, spacing=20)
     )
 
-ft.app(main)
+    async def handle_send_image():
+        try:
+            image_path = "output.png"
+            url_send = await send_image(image_path)
+            pyperclip.copy(url_send)
+            if url:
+                send_image_text.value = "送信されました"
+            else:
+                send_image_text.value = "送信できませんでした" 
+        except Exception as ee:
+            send_image_text.value = f"送信エラー：{ee}"
 
 
 
+async def async_main():
+    asyncio.create_task(client.start(TOKEN))
+    try:
+        await ft.app_async(target=main)
+    finally:
+        client.close()
 
+
+if __name__ == "__main__":
+    asyncio.run(async_main())
+    #ft.app(main)
