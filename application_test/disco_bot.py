@@ -1,12 +1,12 @@
 # %%
 
-import discode
-from Flet_GUI import image_data
+import discord
+import Flet_GUI
 from PIL import Image
 
-TOKEN = "MTMwOTQyNjc3NDAwOTk3NDg3NA.GwhQff.lw-EBf3EQVJXWzr9Zgy0cEUBYcT0ahB_CJrvm0"
+TOKEN = "MTMwOTQyNjc3NDAwOTk3NDg3NA.GbU-Ka.BFIhX6b9EivPS2clVvUEYzuk-N9K6IrMLBF45o"
 
-client = discode.Client()
+client = discord.Client(intents=discord.Intents.default())
 
 @client.event
 async def on_ready():
@@ -15,25 +15,17 @@ async def on_ready():
 
 @client.events
 async def on_massage(massage):
-    global image_url
     if massage.auther.bot:    
         if massage.attachments:
             for attachment in massage.attachments:
                 if attachment.url.endswith(("png","jpeg", "jpg")):
-                    await massage.chan
+                    await massage.channel.send(attachment.url)
 
     
     if massage.content == "":
-        image = Image.open(image_data)
-        await massage.channel.send(file= discode.File(image))
-        
-
-        
+        image = Image.open('output.png')
+        await massage.channel.send(file= discord.File(image))
 
 
-
-
+    
 client.run(TOKEN)
-
-
-
