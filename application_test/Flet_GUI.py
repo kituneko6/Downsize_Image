@@ -27,6 +27,7 @@ def main(page: ft.Page):
     status_text = ft.Text("画像URLを入力して、表示ボタンを押してください")
     send_image_text = ft.Text("")
 
+    ###クリップボードの内容をコピー###
     def copy_clip(e):
         try:
             clip = pyperclip.paste()
@@ -40,8 +41,12 @@ def main(page: ft.Page):
         nonlocal image_display
         global image_data
         try:
-            response = requests.get(url.value)
-            response.raise_for_status()
+            _url = url.value
+            if _url[:4] == "http": 
+                response = requests.get(_url)
+                response.raise_for_status()
+            else:
+                image_in = Image.open(_url)
 
             if "image" not in response.headers["content-type"]:
                 raise ValueError("URLが画像ではありません")
@@ -92,9 +97,10 @@ def main(page: ft.Page):
             status_text.value = f"リサイズERROR：{ex}"
             raise
         
-    copy_button = ft.ElevatedButton("Copy", on_click=copy_clip)
-    fetch_button = ft.ElevatedButton("表示", on_click=fetch_image)
+    copy_button = ft.ElevatedButton("Copy", on_click=copy_clip)  #クリップボードから貼り付けボタン
+    fetch_button = ft.ElevatedButton("表示", on_click=fetch_image)  #画像の変換表示、URL取得ボタン
 
+    ###GUI設定###
     page.add(
         ft.Column([
             url,
@@ -107,6 +113,7 @@ def main(page: ft.Page):
         alignment=ft.MainAxisAlignment.CENTER, spacing=20)
     )
 
+    ###Discord_Botから呼び出し・送信###
     async def handle_send_image():
         try:
             image_path = "output.png"
