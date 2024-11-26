@@ -8,13 +8,8 @@ import pyperclip
 from disco_bot import client, send_image
 import asyncio
 
-TOKEN = "MTMwOTQyNjc3NDAwOTk3NDg3NA.G4v112.06AVIquouZ-nznSejhxXE4_zGtF9N3VOugKKSI"
+TOKEN = open('TOKEN.txt', 'r')
 
-
-'''
-proxies_dic = {"http": "http://g3.konicaminolta.jp:8080",
-                "https": "http://g3.konicaminolta.jp:8080",}
-'''
 
 def main(page: ft.Page):
     page.title = "画像取得TEST_APP"
@@ -27,7 +22,7 @@ def main(page: ft.Page):
     status_text = ft.Text("画像URLを入力して、表示ボタンを押してください")
     send_image_text = ft.Text("")
 
-    ###クリップボードの内容をコピー###
+    ###ボタン：クリップボードの内容をコピー###
     def copy_clip(e):
         try:
             clip = pyperclip.paste()
@@ -102,9 +97,11 @@ def main(page: ft.Page):
 
     ###GUI設定###
     page.add(
-        ft.Column([
+        ft.Row([
             url,
             copy_button,
+        ], ),
+        ft.Column([
             fetch_button,
             status_text,
             image_display,
@@ -134,6 +131,7 @@ async def async_main():
         await ft.app_async(target=main)
     finally:
         client.close()
+        TOKEN.close()
 
 
 if __name__ == "__main__":
