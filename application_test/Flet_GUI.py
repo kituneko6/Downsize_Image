@@ -1,4 +1,6 @@
-import requests
+# %%
+
+import requests, os
 import flet as ft
 from flet import Image
 from io import BytesIO
@@ -8,8 +10,9 @@ import pyperclip
 from disco_bot import client, send_image
 import asyncio
 
-TOKEN = open('TOKEN.txt', 'r')
-
+with open(R"application_test\bot_token.txt", 'r', encoding='utf-8') as file:
+    TOKEN = file.read()
+print(TOKEN)
 
 def main(page: ft.Page):
     page.title = "画像取得TEST_APP"
@@ -40,22 +43,21 @@ def main(page: ft.Page):
             if _url[:4] == "http": 
                 response = requests.get(_url)
                 response.raise_for_status()
+
+                image_data = BytesIO(response.content)
+                image_in = Image.open(image_data)
+                image_in.save("import.PNG")
+
             else:
-                image_in = Image.open(_url)
+                image_in = Image.open(_url[1:len(_url)-1])
 
-            if "image" not in response.headers["content-type"]:
-                raise ValueError("URLが画像ではありません")
-
-            image_data = BytesIO(response.content)
-            image_in = Image.open(image_data)
-            image_in.save("import.PNG")
 
             #取得画像をローカルに保存
             image_resize = scale_size(image_in, 2048)
             image_byte = BytesIO()
             image_resize.save(image_byte, format="PNG")
             image_resize.save('output.png')
-
+           
             #画像サムネイルを作成
             image_thumbnail = scale_size(image_in, 600)
             image_thumb_byte = BytesIO()
@@ -100,7 +102,7 @@ def main(page: ft.Page):
         ft.Row([
             url,
             copy_button,
-        ], ),
+        ], alignment=ft.MainAxisAlignment.CENTER, spacing=20),
         ft.Column([
             fetch_button,
             status_text,
@@ -131,9 +133,10 @@ async def async_main():
         await ft.app_async(target=main)
     finally:
         client.close()
-        TOKEN.close()
 
 
 if __name__ == "__main__":
     asyncio.run(async_main())
     #ft.app(main)
+
+# %%
