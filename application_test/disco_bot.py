@@ -4,11 +4,11 @@ import discord
 from PIL import Image
 import asyncio
 
-TOKEN = "MTMwOTQyNjc3NDAwOTk3NDg3NA.G4v112.06AVIquouZ-nznSejhxXE4_zGtF9N3VOugKKSI"
 
 client = discord.Client(intents=discord.Intents.default())
-channel_id = 1310154336147472405
-#channel_id = 1310154109558722561
+with open(R"application_test\channel_ID.txt", "r", encoding="utf-8") as file:
+    channel_id = file.read()
+
 
 
 @client.event
