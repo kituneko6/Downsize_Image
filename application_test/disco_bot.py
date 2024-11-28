@@ -40,7 +40,8 @@ async def send_image(file_path):
         print(f"ERROR<send_image>:{e}")
     return message_sent.attachments[0].url if message_sent.attachments else None
 
-
+"""
 def run_bot():
     loop = asyncio.get_event_loop()
     loop.create_task(client.start(TOKEN))
+"""
