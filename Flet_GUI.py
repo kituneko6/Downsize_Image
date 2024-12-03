@@ -10,7 +10,7 @@ import pyperclip
 from disco_bot import client, send_image
 import asyncio
 
-with open(R"application_test\bot_token.txt", 'r', encoding='utf-8') as file:
+with open(R"bot_token.txt", 'r', encoding='utf-8') as file:
     TOKEN = file.read()
 print(TOKEN)
 

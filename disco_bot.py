@@ -6,8 +6,8 @@ import asyncio
 
 
 client = discord.Client(intents=discord.Intents.default())
-with open(R"application_test\channel_ID.txt", "r", encoding="utf-8") as file:
-    channel_id = file.read()
+with open(R"channel_ID.txt", "r", encoding="utf-8") as file:
+    channel_id = int(file.read())
 
 
 
