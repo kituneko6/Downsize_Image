@@ -5,14 +5,18 @@ import flet as ft
 from flet import Image
 from io import BytesIO
 import base64
-from PIL import Image
+from PIL import Image, ExifTags
 import pyperclip
 from disco_bot import client, send_image
 import asyncio
 
+
+
 with open(R"bot_token.txt", 'r', encoding='utf-8') as file:
     TOKEN = file.read()
 print(TOKEN)
+
+
 
 def main(page: ft.Page):
     page.title = "画像取得TEST_APP"
@@ -25,6 +29,9 @@ def main(page: ft.Page):
     status_text = ft.Text("画像URLを入力して、表示ボタンを押してください")
     send_image_text = ft.Text("")
 
+
+
+
     ###ボタン：クリップボードの内容をコピー###
     def copy_clip(e):
         try:
@@ -34,6 +41,9 @@ def main(page: ft.Page):
         except Exception as ex:
             status_text.value = f"Copy_ERROR：{ex}"
     
+
+
+
     ###イメージ取得、リサイズ、保存、表示切替###
     async def fetch_image(e):
         nonlocal image_display
@@ -52,7 +62,7 @@ def main(page: ft.Page):
                 image_in = Image.open(_url[1:len(_url)-1])
 
 
-            #取得画像をローカルに保存
+            #取得画像をリサイズし、ローカルに保存
             image_resize = scale_size(image_in, 2048)
             image_byte = BytesIO()
             image_resize.save(image_byte, format="PNG")
@@ -67,35 +77,78 @@ def main(page: ft.Page):
             image_base64 = base64.b64encode(image_thumb_byte.getvalue()).decode("utf-8")
             image_display.src_base64 = image_base64
             status_text.value = f"画像が正常に読み込まれました！\nサムネイルサイズ{image_thumbnail.size}"
+            print(f"画像が正常に読み込まれました！\nサムネイルサイズ{image_thumbnail.size}")
 
             await handle_send_image()
 
         except Exception as ex:
             status_text.value = f"エラーが発生しました：{ex}"
+            print(f"エラーが発生しました：{ex}")
 
         page.update()
     
 
 
+
+
+    ###画像のExif情報を修正###
+    def fix_Exif(image):
+        try:
+            exif = image._getexif()
+            if exif is not None:
+                ori_key = next(key for key, val in ExifTags.TAGS.items() if val == 'Orientation')
+                ori = exif.get(ori_key)
+
+            if ori == 2:
+                image = image.transpose(Image.FLIP_LEFT_RIGHT)
+            elif ori == 3:
+                image = image.rotate(180, expand = True)
+            elif ori == 4:
+                image = image.transpose(Image.FLIP_TOP_BOTTOM)
+            elif ori == 5:
+                image = image.transpose(Image.FLIP_TOP_BOTTOM).rotate(-90, expand = True)
+            elif ori == 6:
+                image = image.rotate(-90, expand = True)
+            elif ori == 7:
+                image = image.transpose(Image.FLIP_LEFT_RIGHT).rotate(-90, expand = True)
+            elif ori == 8:
+                image = image.rotate(90, expand = True)
+        
+        except Exception as e:
+            status_text.value = f"エラーが発生しました：{e}"
+            print(f"エラーが発生しました：{e}")
+        return image
+
+
+
+
     ###比率をそのままリサイズ###
     def scale_size(image, hei):
+        image = fix_Exif()
         x_size = image.width
         y_size = image.height
         original_size = image.size
+        
         try:
             if x_size > hei or y_size > hei: #指定されたサイズよりも大きい場合リサイズ
                 image.thumbnail((hei, hei))
                 status_text.value = f"画像リサイズ成功: {original_size} -> {image.size}"
+                print(f"画像リサイズ成功: {original_size} -> {image.size}")
             else:
                 status_text.value = f"リサイズ不要：{original_size}"
+                print(f"リサイズ不要：{original_size}")
             return image
         
         except Exception as ex:
             status_text.value = f"リサイズERROR：{ex}"
+            print(f"リサイズERROR：{ex}")
             raise
         
-    copy_button = ft.ElevatedButton("Copy", on_click=copy_clip)  #クリップボードから貼り付けボタン
-    fetch_button = ft.ElevatedButton("表示", on_click=fetch_image)  #画像の変換表示、URL取得ボタン
+    copy_button = ft.ElevatedButton("Past to Clipborad", on_click=copy_clip)  #クリップボードから貼り付けボタン
+    fetch_button = ft.ElevatedButton("変換＆URL取得", on_click=fetch_image)  #画像の変換表示、URL取得ボタン
+
+
+
 
     ###GUI設定###
     page.add(
@@ -112,6 +165,9 @@ def main(page: ft.Page):
         alignment=ft.MainAxisAlignment.CENTER, spacing=20)
     )
 
+
+
+
     ###Discord_Botから呼び出し・送信###
     async def handle_send_image():
         try:
@@ -127,12 +183,16 @@ def main(page: ft.Page):
 
 
 
+
 async def async_main():
     asyncio.create_task(client.start(TOKEN))
     try:
         await ft.app_async(target=main)
     finally:
         client.close()
+
+
+
 
 
 if __name__ == "__main__":
