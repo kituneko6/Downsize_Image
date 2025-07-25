@@ -9,11 +9,22 @@ from PIL import Image, ExifTags
 import pyperclip
 from disco_bot import client, send_image
 import asyncio
+import sys
+
+def resource_path(relative_path):
+    try:
+        # PyInstallerのとき
+        base_path = sys._MEIPASS
+    except AttributeError:
+        # 通常実行時
+        base_path = os.path.dirname(__file__)
+
+    return os.path.join(base_path, relative_path)
 
 
 
-with open(R"bot_token.txt", 'r', encoding='utf-8') as file:
-    TOKEN = file.read()
+with open(resource_path("../bot_token.txt"), 'r', encoding='utf-8') as file:
+    TOKEN = file.read().strip()
 print(TOKEN)
 
 
@@ -60,6 +71,7 @@ def main(page: ft.Page):
 
             else:
                 image_in = Image.open(_url[1:len(_url)-1])
+
 
 
             #取得画像をリサイズし、ローカルに保存
@@ -124,7 +136,7 @@ def main(page: ft.Page):
 
     ###比率をそのままリサイズ###
     def scale_size(image, hei):
-        image = fix_Exif()
+        image = fix_Exif(image)
         x_size = image.width
         y_size = image.height
         original_size = image.size
@@ -184,19 +196,12 @@ def main(page: ft.Page):
 
 
 
-async def async_main():
-    asyncio.create_task(client.start(TOKEN))
-    try:
-        await ft.app_async(target=main)
-    finally:
-        client.close()
-
-
-
+async def run_all():
+    bot_task = asyncio.create_task(client.start(TOKEN))
+    gui_task = asyncio.create_task(ft.app_async(target=main))
+    await asyncio.gather(bot_task, gui_task)
 
 
 if __name__ == "__main__":
-    asyncio.run(async_main())
-    #ft.app(main)
+    asyncio.run(run_all())
 
-# %%

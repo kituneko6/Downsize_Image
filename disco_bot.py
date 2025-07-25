@@ -1,12 +1,10 @@
-# %%
-
 import discord
 from PIL import Image
 import asyncio
 
 
 client = discord.Client(intents=discord.Intents.default())
-with open(R"channel_ID.txt", "r", encoding="utf-8") as file:
+with open("channel_ID.txt", "r", encoding="utf-8") as file:
     channel_id = int(file.read())
 
 
